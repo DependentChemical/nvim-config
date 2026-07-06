@@ -1,7 +1,7 @@
 vim.g.mapleader = " "
 
 vim.opt.number = true
-vim.opt.relativenumber = false
+vim.opt.relativenumber = true
 vim.opt.cursorline = true
 
 --------------------------------------------------
@@ -94,19 +94,13 @@ require("lazy").setup({
     -- Treesitter
     {
         "nvim-treesitter/nvim-treesitter",
-        branch = "master",
-        build = ":TSUpdate",
-        opts = {
-            ensure_installed = {
+        branch = "main",
+        build = function()
+            require("nvim-treesitter").install({
                 "lua", "vim", "vimdoc", "bash", "json", "yaml",
                 "toml", "markdown", "markdown_inline", "rust",
                 "c", "cpp", "python",
-            },
-            auto_install = true,
-            highlight = { enable = true },
-        },
-        config = function(_, opts)
-            require("nvim-treesitter.configs").setup(opts)
+            }):wait(60000)
         end,
     },
 
@@ -124,6 +118,8 @@ require("lazy").setup({
                 "rust_analyzer",
                 "clangd",
                 "jsonls",
+                "powershell_es",
+                "pyrefly",
             },
         },
     },
@@ -180,6 +176,27 @@ require("lazy").setup({
 vim.cmd[[colorscheme tokyonight]]
 
 --------------------------------------------------
+-- word wrap per filetype
+--------------------------------------------------
+
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = { "markdown" },
+    callback = function()
+        vim.opt_local.wrap = true
+        vim.opt_local.linebreak = true
+    end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = { "*" },
+    callback = function()
+        if vim.bo.filetype ~= "markdown" then
+            vim.opt_local.wrap = false
+        end
+    end,
+})
+
+--------------------------------------------------
 -- telescope keybinds
 --------------------------------------------------
 
@@ -215,6 +232,19 @@ vim.lsp.config("clangd", {
 
 vim.lsp.config("powershell_es", {
     capabilities = capabilities,
+    cmd = {
+        "pwsh", "-NoLogo", "-NoProfile", "-Command",
+        vim.fn.stdpath("data") .. "/mason/packages/powershell-editor-services/PowerShellEditorServices/Start-EditorServices.ps1",
+        "-BundledModulesPath", vim.fn.stdpath("data") .. "/mason/packages/powershell-editor-services",
+        "-LogPath", vim.fn.stdpath("data") .. "/powershell_es.log",
+        "-SessionDetailsPath", vim.fn.stdpath("data") .. "/powershell_es.session.json",
+        "-FeatureFlags", "@{}",
+        "-AdditionalModules", "@()",
+        "-HostName", "nvim",
+        "-HostProfileId", "0",
+        "-HostVersion", "0.0.0",
+        "-Stdio", "-LogLevel", "Normal",
+    },
 })
 
 vim.lsp.config("pyrefly", {
