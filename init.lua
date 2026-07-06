@@ -95,13 +95,14 @@ require("lazy").setup({
     {
         "nvim-treesitter/nvim-treesitter",
         branch = "main",
-        build = function()
-            require("nvim-treesitter").install({
+        opts = {
+            ensure_installed = {
                 "lua", "vim", "vimdoc", "bash", "json", "yaml",
                 "toml", "markdown", "markdown_inline", "rust",
                 "c", "cpp", "python",
-            }):wait(60000)
-        end,
+            },
+            auto_install = true,
+        },
     },
 
     -- Mason
