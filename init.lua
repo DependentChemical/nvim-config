@@ -3,6 +3,7 @@ vim.g.mapleader = " "
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.cursorline = true
+vim.opt.clipboard = "unnamedplus"
 
 --------------------------------------------------
 -- lazy.nvim bootstrap
@@ -43,6 +44,12 @@ require("lazy").setup({
     -- GameMaker syntax
     {
         "JafarDakhan/vim-gml",
+    },
+
+    -- Monkey-C (Garmin Connect IQ)
+    {
+        "Philwi/vim-monkeyc",
+        ft = "monkeyc",
     },
 
     -- Statusline (Lualine) & Icons
@@ -118,7 +125,6 @@ require("lazy").setup({
                 "lua_ls",
                 "rust_analyzer",
                 "clangd",
-                "jsonls",
                 "powershell_es",
                 "pyrefly",
             },
@@ -265,17 +271,28 @@ vim.lsp.config("lua_ls", {
 })
 
 --------------------------------------------------
--- JSON LSP
+-- JSON / JSONC LSP (Biome, no Node.js required)
+-- Uses standalone biome.exe in nvim config dir:
+--   stdpath("config") .. "/biome.exe"
 --------------------------------------------------
 
-vim.lsp.config("jsonls", {
+local biome_cmd = vim.fn.stdpath("config") .. "/biome.exe"
+
+vim.lsp.config("biome", {
     capabilities = capabilities,
-    settings = {
-        json = {
-            validate = { enable = true },
-            schemas = {},
-        },
-    },
+    cmd = { biome_cmd, "lsp-proxy" },
+    filetypes = { "json", "jsonc" },
+    -- Override upstream biome root_dir (which requires biome.json):
+    -- fall back to cwd so ad-hoc JSON files still get LSP.
+    root_dir = function(bufnr, on_dir)
+        local fname = vim.api.nvim_buf_get_name(bufnr)
+        local root = vim.fs.root(bufnr, { "biome.json", "biome.jsonc", ".git" })
+            or (fname ~= "" and vim.fs.dirname(fname))
+            or vim.fn.getcwd()
+        on_dir(root)
+    end,
+    single_file_support = true,
+    workspace_required = false,
 })
 
 --------------------------------------------------
@@ -287,6 +304,6 @@ vim.lsp.enable({
     "clangd",
     "powershell_es",
     "pyrefly",
-    "jsonls",
+    "biome",
     "lua_ls",
 })

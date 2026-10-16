@@ -1,1 +1,47 @@
-lazy-lock.json
+# --- binaries / large tools (privacy + size) ---
+# biome.exe is a ~79MB standalone LSP server, re-downloaded per machine
+biome.exe
+*.exe
+*.dll
+
+# --- Neovim runtime (in case stdpaths ever change) ---
+# Normally these live in %LOCALAPPDATA%\nvim-data\, outside this repo,
+# but ignore them here as belt-and-suspenders.
+/nvim-data/
+data/
+swap/
+undo/
+backup/
+shada/
+*.swp
+*.swo
+*~
+.netrwhist
+*.shada
+*.log
+*session*
+Session.vim
+
+# --- Mason / lazy artifacts if ever moved inside config ---
+mason/
+.lazy/
+lazy/
+
+# --- secrets / privacy - never commit ---
+.env
+.env.*
+*.pem
+*.key
+*.pfx
+secrets.lua
+local.lua
+*_secret.lua
+
+# --- OS / editor noise ---
+Desktop.ini
+Thumbs.db
+.DS_Store
+.vscode/
+.idea/
+*.tmp
+*.bak
